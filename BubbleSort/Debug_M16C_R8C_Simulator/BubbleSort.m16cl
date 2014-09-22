@@ -1,0 +1,5 @@
+-L "nc30lib"
+-G
+-MS
+-O "C:\WorkSpace\BubbleSort\BubbleSort\BubbleSort\Debug_M16C_R8C_Simulator\BubbleSort.x30"
+"C:\WorkSpace\BubbleSort\BubbleSort\BubbleSort\Debug_M16C_R8C_Simulator\Programm.r30"

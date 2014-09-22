@@ -1,0 +1,119 @@
+;------------------------------------------------------------------------
+;                                                                       |
+;   FILE        :für Uebungsprogramme                                   |
+;   DATE        :Sept 2011                                              |
+;   DESCRIPTION :Template für M16C65 Uebungen an der Juventus           |
+;   CPU GROUP   :M16C65                                                 |
+;   Owner       :Clive Giovannini                                       |
+;                                                                       |
+;   Version: 1.0                                                        |
+;                                                                       |
+;------------------------------------------------------------------------
+
+
+;*********************************************************************
+;
+;     *** Include Files ***
+;
+;*********************************************************************
+	.include sfr65.inc
+	.include Init_M16C65.inc
+
+
+;*********************************************************************
+;
+;     *** Programm ***
+;
+;*********************************************************************	
+
+Init:
+	; Original Daten
+	SOURCE_START_ADDR .equ 400h
+	SOURCE_END_ADDR .equ 409h
+	MOV.B #001h, 400h
+	MOV.B #007h, 401h
+	MOV.B #005h, 402h
+	MOV.B #00Bh, 403h
+	MOV.B #000h, 404h
+	MOV.B #006h, 405h
+	MOV.B #002h, 406h
+	MOV.B #007h, 407h
+	MOV.B #00Ah, 408h
+	MOV.B #00Ch, 409h	
+	
+	; Zu sortiernde Daten
+	DEST_START_ADDR .equ 410h
+	DEST_END_ADDR .equ 419h
+	
+	; Iterations Variabeln
+	;.DEF HAS_SWAPED = R0
+	MOV.W #1h, R0
+	;.DEF CURRENT_ADDR = A0
+	;.DEF BUFFER = R1
+	
+	; Init für Kopiervorgang
+	MOV.W #SOURCE_START_ADDR, A0
+	MOV.W #DEST_START_ADDR, A1
+	JMP CopyToDest
+
+; Orginaldaten kopieren
+CopyToDest:
+	MOV.B [A0],[A1]
+	CMP.W #SOURCE_END_ADDR, A0 ; Aktuelle Adresse - End-Adressse
+	JPZ UntilNoMoreSwapsNeeded ;S = 0, Wenn Positive or Zero
+	INC.W A0
+	INC.W A1	 
+	JMP CopyToDest
+
+UntilNoMoreSwapsNeeded: 
+	CMP.W #0h, R0 ; Has Swaped?
+	JEQ JobDone ;R0 = 0
+	MOV.W #DEST_START_ADDR, A0 ; Reset Interationsvaribale
+	MOV.W #0h, R0 ; Reset Has Swaped
+	JSR Sort
+	JMP UntilNoMoreSwapsNeeded	
+
+Sort:
+	MOV.W A0, A1
+	INC.W A1
+	CMP.B [A1], [A0] ; A0 - A1
+	JGTU Swap
+	SwapDone:	
+	INC.W A0	
+	CMP.W #DEST_END_ADDR, A0 ; Aktuelle Adresse - End-Adressse
+	JN Sort ; S=1
+	RTS
+
+Swap:
+	MOV.B [A0], R1L
+	MOV.B [A1], [A0]
+	MOV.B R1L, [A1]
+	MOV.W #1h, R0 ; Has Swaped = 1
+	JMP SwapDone
+
+JobDone:	
+	nop
+	jmp JobDone
+
+
+;*********************************************************************
+;
+;     *** Interrupts ***
+;
+;*********************************************************************	
+
+
+
+
+; dummy interrupt function
+;---------------------------------------------------------------------
+
+dummy_int:
+		reit
+
+; Interrupt Vektoren
+;---------------------------------------------------------------------
+	.include IRQ_Vect.inc
+		
+
+.End	
